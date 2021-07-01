@@ -1,5 +1,6 @@
 namespace SpriteKind {
     export const coin = SpriteKind.create()
+    export const entty = SpriteKind.create()
 }
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     animation.runImageAnimation(
@@ -111,7 +112,25 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile`, function (sprite, location) {
     info.changeLifeBy(3)
-    game.over(false, effects.dissolve)
+    game.over(false, effects.melt)
+    toad = sprites.create(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . f f f f f f . . . . . 
+        . . . . f 1 1 1 1 1 1 f . . . . 
+        . . . f 9 1 1 9 1 9 1 1 f . . . 
+        . . f 1 1 1 1 1 1 1 1 1 1 f . . 
+        . f 9 1 9 1 1 9 1 1 9 1 9 1 f . 
+        . f 1 1 1 1 1 1 1 1 1 1 1 1 f . 
+        . f d d d d f d d f d d d d f . 
+        . f 1 d d d f d d f d d d 1 f . 
+        . . f 1 d d d d d d d d 1 f . . 
+        . . . f d d d d d d d d f . . . 
+        . . d d f 6 6 d d 6 6 f d d . . 
+        . . d d f 6 6 d d 6 6 f d d . . 
+        . . d d f 6 6 d d 6 6 f d d . . 
+        . . . . . f f f f f f . . . . . 
+        . . . . . f f . . f f . . . . . 
+        `, SpriteKind.Player)
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (dude.vy == 0) {
@@ -197,10 +216,6 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     false
     )
 })
-scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.chestClosed, function (sprite, location) {
-    music.knock.play()
-    info.changeScoreBy(10)
-})
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     animation.runImageAnimation(
     dude,
@@ -282,6 +297,18 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.coin, function (sprite, otherSpr
     otherSprite.destroy()
     music.baDing.play()
 })
+info.onLifeZero(function () {
+    game.over(false, effects.melt)
+})
+scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.collectibleRedCrystal, function (sprite, location) {
+    info.changeLifeBy(-1)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    info.changeLifeBy(-1)
+    bady.destroy(effects.warmRadial, 500)
+})
+let toad: Sprite = null
+let bady: Sprite = null
 let mySprite: Sprite = null
 let dude: Sprite = null
 scene.setBackgroundImage(img`
@@ -430,24 +457,6 @@ scene.cameraFollowSprite(dude)
 dude.ay = 250
 info.setLife(3)
 info.setScore(0)
-let toad = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . f f f f f f . . . . . 
-    . . . . f 1 1 1 1 1 1 f . . . . 
-    . . . f 9 1 1 9 1 9 1 1 f . . . 
-    . . f 1 1 1 1 1 1 1 1 1 1 f . . 
-    . f 9 1 9 1 1 9 1 1 9 1 9 1 f . 
-    . f 1 1 1 1 1 1 1 1 1 1 1 1 f . 
-    . f d d d d f d d f d d d d f . 
-    . f 1 d d d f d d f d d d 1 f . 
-    . . f 1 d d d d d d d d 1 f . . 
-    . . . f d d d d d d d d f . . . 
-    . . d d f 6 6 d d 6 6 f d d . . 
-    . . d d f 6 6 d d 6 6 f d d . . 
-    . . d d f 6 6 d d 6 6 f d d . . 
-    . . . . . f f f f f f . . . . . 
-    . . . . . f f . . f f . . . . . 
-    `, SpriteKind.Player)
 for (let value of tiles.getTilesByType(assets.tile`myTile4`)) {
     mySprite = sprites.create(img`
         . . b b b b . . 
@@ -522,3 +531,33 @@ for (let value of tiles.getTilesByType(assets.tile`myTile4`)) {
     tiles.placeOnTile(mySprite, value)
     tiles.setTileAt(value, assets.tile`transparency16`)
 }
+for (let value of tiles.getTilesByType(assets.tile`myTile6`)) {
+    bady = sprites.create(img`
+        ........................
+        ........................
+        ........................
+        ........................
+        ..........ffff..........
+        ........ff1111ff........
+        .......fb111111bf.......
+        .......f11111111f.......
+        ......fd11111111df......
+        ......fd11111111df......
+        ......fddd1111dddf......
+        ......fbdbfddfbdbf......
+        ......fcdcf11fcdcf......
+        .......fb111111ffff.....
+        ......fffcdb1bc111cf....
+        ....fc111cbfbf1b1b1f....
+        ....f1b1b1ffffbfbfbf....
+        ....fbfbfffffff.........
+        .........fffff..........
+        ..........fff...........
+        ........................
+        ........................
+        ........................
+        ........................
+        `, SpriteKind.Enemy)
+    tiles.placeOnTile(bady, value)
+}
+bady.follow(dude)
